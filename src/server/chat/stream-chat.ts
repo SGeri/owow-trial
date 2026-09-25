@@ -1,12 +1,14 @@
 import {
   convertToModelMessages,
   createIdGenerator,
+  createUIMessageStream,
   createUIMessageStreamResponse,
   generateText,
   Output,
   streamText,
   toUIMessageStream,
   validateUIMessages,
+  type ToolSet,
   type UIMessage,
 } from "ai";
 import { z } from "zod";
@@ -18,8 +20,9 @@ import {
   listThreadMessages,
   replaceThreadMessages,
 } from "@/server/controllers/threads";
-import type { ChatRequest } from "@/server/schemas/chat";
+import type { ChatRequest, OttoUIMessage } from "@/server/schemas/chat";
 
+import { generateCitations, type CitationSourceRecord } from "./citations";
 import { formatCoachContext } from "./context";
 import {
   COACHING_METHOD,
@@ -60,6 +63,45 @@ function persistStream(
   });
 }
 
+function persistCoachingStream(
+  result: ReturnType<typeof streamText>,
+  threadId: string,
+  originalMessages: OttoUIMessage[],
+  records: CitationSourceRecord[],
+) {
+  result.consumeStream();
+
+  const stream = createUIMessageStream<OttoUIMessage>({
+    originalMessages,
+    generateId: generateMessageId,
+    execute: async ({ writer }) => {
+      writer.merge(
+        toUIMessageStream<ToolSet, OttoUIMessage>({
+          stream: result.stream,
+          originalMessages,
+          generateMessageId,
+        }),
+      );
+
+      try {
+        const assistantText = await result.text;
+        const citations = await generateCitations({ records, assistantText });
+        writer.write({
+          type: "message-metadata",
+          messageMetadata: { citations },
+        });
+      } catch (error) {
+        console.error("Citation pass failed", error);
+      }
+    },
+    onEnd: async ({ messages: saved }) => {
+      await replaceThreadMessages(threadId, saved);
+    },
+  });
+
+  return createUIMessageStreamResponse({ stream });
+}
+
 export async function streamChat(input: ChatRequest) {
   const thread = await getOrCreateThreadForSession(input.sessionId);
   if (!thread) {
@@ -67,8 +109,8 @@ export async function streamChat(input: ChatRequest) {
   }
 
   const previous = await listThreadMessages(thread.id);
-  const messages = await validateUIMessages({
-    messages: [...previous, input.message as UIMessage],
+  const messages = await validateUIMessages<OttoUIMessage>({
+    messages: [...previous, input.message as OttoUIMessage],
   });
 
   const latest = messages.at(-1);
@@ -101,5 +143,10 @@ export async function streamChat(input: ChatRequest) {
     messages: modelMessages,
   });
 
-  return persistStream(result, thread.id, messages);
+  return persistCoachingStream(
+    result,
+    thread.id,
+    messages,
+    context?.records ?? [],
+  );
 }

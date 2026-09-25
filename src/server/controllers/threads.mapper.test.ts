@@ -1,7 +1,13 @@
 import type { UIMessage } from "ai";
 import { describe, expect, it } from "vitest";
 
+import { Prisma } from "@/generated/prisma/client";
+
 import { fromUIMessage, toUIMessage } from "./threads";
+
+function asJson(value: unknown): Prisma.JsonValue {
+  return value as Prisma.JsonValue;
+}
 
 describe("UI message mapping", () => {
   it("round-trips parts and metadata", () => {
@@ -24,8 +30,8 @@ describe("UI message mapping", () => {
       toUIMessage({
         id: row.id,
         role: row.role,
-        parts: row.parts,
-        metadata: row.metadata ?? null,
+        parts: asJson(row.parts),
+        metadata: asJson(row.metadata ?? null),
       }),
     ).toEqual(message);
   });
@@ -42,7 +48,7 @@ describe("UI message mapping", () => {
       toUIMessage({
         id: message.id,
         role: message.role,
-        parts: message.parts,
+        parts: asJson(message.parts),
         metadata: null,
       }),
     ).toEqual(message);

@@ -17,8 +17,13 @@ import {
   MessageScrollerViewport,
 } from "@/components/ui/message-scroller";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  messageMetadataSchema,
+  type Citation,
+} from "@/server/schemas/chat";
 
 import { chatColumnClassName } from "./chat-layout";
+import { CitationsDialog } from "./citations-dialog";
 import { MarkdownContent } from "./markdown-content";
 
 function textFromMessage(message: UIMessage) {
@@ -26,6 +31,12 @@ function textFromMessage(message: UIMessage) {
     .filter((part) => part.type === "text")
     .map((part) => part.text)
     .join("");
+}
+
+function citationsFromMessage(message: UIMessage): Citation[] | undefined {
+  const parsed = messageMetadataSchema.safeParse(message.metadata ?? {});
+  if (!parsed.success) return undefined;
+  return parsed.data.citations;
 }
 
 export function ChatMessages({
@@ -65,6 +76,7 @@ export function ChatMessages({
                 const isLast = index === messages.length - 1;
                 const showSpinner =
                   pending && isLast && !isUser && status === "streaming";
+                const citations = isUser ? undefined : citationsFromMessage(message);
 
                 return (
                   <MessageScrollerItem key={message.id} scrollAnchor>
@@ -79,7 +91,12 @@ export function ChatMessages({
                             {textFromMessage(message)}
                           </p>
                         ) : (
-                          <MarkdownContent content={textFromMessage(message)} />
+                          <>
+                            <MarkdownContent content={textFromMessage(message)} />
+                            {citations && !showSpinner ? (
+                              <CitationsDialog citations={citations} />
+                            ) : null}
+                          </>
                         )}
                       </MessageContent>
                     </Message>

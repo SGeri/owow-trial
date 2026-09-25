@@ -2,6 +2,7 @@ import type { UIMessage } from "ai";
 import { Prisma } from "@/generated/prisma/client";
 
 import { db } from "@/server/db";
+import type { MessageMetadata, OttoUIMessage } from "@/server/schemas/chat";
 
 type MessageRow = {
   id: string;
@@ -10,12 +11,14 @@ type MessageRow = {
   metadata: Prisma.JsonValue | null;
 };
 
-export function toUIMessage(row: MessageRow): UIMessage {
+export function toUIMessage(row: MessageRow): OttoUIMessage {
   return {
     id: row.id,
     role: row.role,
-    parts: row.parts as UIMessage["parts"],
-    ...(row.metadata != null ? { metadata: row.metadata } : {}),
+    parts: row.parts as OttoUIMessage["parts"],
+    ...(row.metadata != null
+      ? { metadata: row.metadata as MessageMetadata }
+      : {}),
   };
 }
 
@@ -52,7 +55,9 @@ export async function getOrCreateThreadForSession(sessionId: string) {
   });
 }
 
-export async function listThreadMessages(threadId: string): Promise<UIMessage[]> {
+export async function listThreadMessages(
+  threadId: string,
+): Promise<OttoUIMessage[]> {
   const rows = await db.chatMessage.findMany({
     where: { threadId },
     orderBy: { createdAt: "asc" },
@@ -64,7 +69,7 @@ export async function listThreadMessages(threadId: string): Promise<UIMessage[]>
 
 export async function listMessagesForSession(
   sessionId: string,
-): Promise<UIMessage[]> {
+): Promise<OttoUIMessage[]> {
   const thread = await getOrCreateThreadForSession(sessionId);
   if (!thread) {
     return [];

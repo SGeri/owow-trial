@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import { assistantMessage, userMessage } from "@/test/fixtures/messages";
@@ -29,6 +30,7 @@ describe("ChatMessages", () => {
     expect(screen.getByText("I postponed it.")).toBeInTheDocument();
     expect(screen.getByText("Otto")).toBeInTheDocument();
     expect(screen.getByText("Next cue:")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Prior work" })).not.toBeInTheDocument();
   });
 
   it("shows a spinner while Otto is streaming or the reply is pending", () => {
@@ -50,5 +52,66 @@ describe("ChatMessages", () => {
       />,
     );
     expect(screen.getByRole("status", { name: "Loading" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Prior work" })).not.toBeInTheDocument();
+  });
+
+  it("opens prior work when the reply used no earlier records", async () => {
+    const user = userEvent.setup();
+    render(
+      <ChatMessages
+        messages={[
+          userMessage("I postponed it."),
+          {
+            ...assistantMessage("Next cue: ask them."),
+            metadata: { citations: [] },
+          },
+        ]}
+        status="ready"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Prior work" }));
+    expect(
+      screen.getByText("No prior work shaped this reply."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("This reply stands on this week's message."),
+    ).toBeInTheDocument();
+  });
+
+  it("opens the records a reply actually used", async () => {
+    const user = userEvent.setup();
+    render(
+      <ChatMessages
+        messages={[
+          userMessage("I postponed it."),
+          {
+            ...assistantMessage("Next cue: ask them."),
+            metadata: {
+              citations: [
+                {
+                  recordId: "ex-101-1",
+                  week: 1,
+                  type: "exercise",
+                  text: "I postponed a difficult conversation.",
+                  explanation: "The reply stays on that postponed conversation.",
+                },
+              ],
+            },
+          },
+        ]}
+        status="ready"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Prior work" }));
+    expect(
+      screen.getByText("I postponed a difficult conversation."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("The reply stays on that postponed conversation."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Why it mattered")).toBeInTheDocument();
+    expect(screen.getByText("week 1 exercise")).toBeInTheDocument();
   });
 });

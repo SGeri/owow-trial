@@ -5,6 +5,8 @@ const captured = vi.hoisted(() => ({
   onEnd: undefined as
     | ((args: { messages: UIMessage[] }) => Promise<void> | void)
     | undefined,
+  execute: undefined as Promise<void> | undefined,
+  writes: [] as Array<{ type: string; messageMetadata?: unknown }>,
 }));
 
 vi.mock("ai", async (importOriginal) => {
@@ -15,11 +17,36 @@ vi.mock("ai", async (importOriginal) => {
     streamText: vi.fn(() => ({
       consumeStream: vi.fn(),
       stream: new ReadableStream(),
+      text: Promise.resolve("Next cue: ask them what they see."),
     })),
     toUIMessageStream: vi.fn((options: { onEnd?: typeof captured.onEnd }) => {
-      captured.onEnd = options.onEnd;
+      if (options.onEnd) captured.onEnd = options.onEnd;
       return new ReadableStream();
     }),
+    createUIMessageStream: vi.fn(
+      (options: {
+        onEnd?: typeof captured.onEnd;
+        execute: (args: {
+          writer: {
+            write: (part: { type: string; messageMetadata?: unknown }) => void;
+            merge: (stream: ReadableStream) => void;
+          };
+        }) => Promise<void> | void;
+      }) => {
+        captured.onEnd = options.onEnd;
+        captured.execute = Promise.resolve(
+          options.execute({
+            writer: {
+              write(part) {
+                captured.writes.push(part);
+              },
+              merge() {},
+            },
+          }),
+        );
+        return new ReadableStream();
+      },
+    ),
     createUIMessageStreamResponse: vi.fn(
       ({ stream }: { stream: ReadableStream }) => new Response(stream),
     ),
@@ -43,6 +70,8 @@ const coachingMessage = userMessage(
 describe("streamChat", () => {
   beforeEach(async () => {
     captured.onEnd = undefined;
+    captured.execute = undefined;
+    captured.writes = [];
     vi.mocked(generateText).mockReset();
     vi.mocked(streamText).mockClear();
     await seedTestDatabase();
@@ -80,10 +109,26 @@ describe("streamChat", () => {
     await persistAndExpectSaved("session-101", "Refusal.");
   });
 
-  it("streams Otto with exercise context and without private chat", async () => {
-    vi.mocked(generateText).mockResolvedValue({
-      output: { allowed: true },
-    } as Awaited<ReturnType<typeof generateText>>);
+  it("streams Otto with exercise context and stores citation metadata", async () => {
+    vi.mocked(generateText)
+      .mockResolvedValueOnce({
+        output: { allowed: true },
+      } as Awaited<ReturnType<typeof generateText>>)
+      .mockResolvedValueOnce({
+        output: {
+          citations: [
+            {
+              recordId: "ex-101-1",
+              explanation:
+                "You postponed the conversation again, so the reply stays on that open loop.",
+            },
+            {
+              recordId: "not-a-record",
+              explanation: "This id is not in the member context.",
+            },
+          ],
+        },
+      } as Awaited<ReturnType<typeof generateText>>);
 
     const response = await streamChat({
       sessionId: "session-101",
@@ -99,17 +144,55 @@ describe("streamChat", () => {
     expect(system).not.toContain("chat-101-1");
     expect(system).not.toContain("member-202");
 
-    await persistAndExpectSaved("session-101", "Next cue: ask them what they see.");
+    await captured.execute;
+    expect(generateText).toHaveBeenCalledTimes(2);
+    const citationPrompt = String(
+      vi.mocked(generateText).mock.calls[1]?.[0].prompt,
+    );
+    expect(citationPrompt).toContain("ex-101-1");
+    expect(citationPrompt).toContain("Next cue: ask them what they see.");
+    expect(citationPrompt).not.toContain("leaving my job");
+
+    expect(captured.writes).toEqual([
+      {
+        type: "message-metadata",
+        messageMetadata: {
+          citations: [
+            {
+              recordId: "ex-101-1",
+              week: 1,
+              type: "exercise",
+              text: "I postponed a difficult conversation with a colleague because I wanted more information first.",
+              explanation:
+                "You postponed the conversation again, so the reply stays on that open loop.",
+            },
+          ],
+        },
+      },
+    ]);
+
+    await persistAndExpectSaved(
+      "session-101",
+      "Next cue: ask them what they see.",
+      captured.writes[0]?.messageMetadata,
+    );
   });
 });
 
-async function persistAndExpectSaved(sessionId: string, assistantText: string) {
+async function persistAndExpectSaved(
+  sessionId: string,
+  assistantText: string,
+  metadata?: unknown,
+) {
   expect(captured.onEnd).toBeTypeOf("function");
   const thread = await getOrCreateThreadForSession(sessionId);
   await captured.onEnd?.({
     messages: [
       userMessage("saved user", "msg-saved-user"),
-      assistantMessage(assistantText, "msg-saved-assistant"),
+      {
+        ...assistantMessage(assistantText, "msg-saved-assistant"),
+        ...(metadata !== undefined ? { metadata } : {}),
+      },
     ],
   });
 
@@ -118,4 +201,7 @@ async function persistAndExpectSaved(sessionId: string, assistantText: string) {
     "msg-saved-user",
     "msg-saved-assistant",
   ]);
+  if (metadata !== undefined) {
+    expect(saved[1]?.metadata).toEqual(metadata);
+  }
 }

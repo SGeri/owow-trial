@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-import { COACHING_METHOD, OTTO_PERSONA, REFUSAL_INSTRUCTIONS } from "./prompts";
+import { COACHING_METHOD, CITATION_INSTRUCTIONS, OTTO_PERSONA, REFUSAL_INSTRUCTIONS } from "./prompts";
 
 const source = readFileSync("docs/SIMPLIFIED_PROMPT.md", "utf8");
 const opening = source.split("\n\n")[0]?.trim();
@@ -24,5 +24,7 @@ describe("prompt contract", () => {
     expect(COACHING_METHOD).toContain("superseded");
     expect(COACHING_METHOD).toContain("Private-chat records");
     expect(REFUSAL_INSTRUCTIONS).toContain("do not do");
+    expect(CITATION_INSTRUCTIONS).toContain("empty citations array");
+    expect(CITATION_INSTRUCTIONS).toContain("Never invent an id");
   });
 });

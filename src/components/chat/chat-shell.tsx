@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, type UIMessage } from "ai";
+import { DefaultChatTransport } from "ai";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import type { OttoUIMessage } from "@/server/schemas/chat";
 
 import { chatColumnClassName } from "./chat-layout";
 import { ChatInput } from "./chat-input";
@@ -19,7 +20,7 @@ export function ChatShell({
 }: {
   sessionId: string;
   sessions: TrustedSessionOption[];
-  initialMessages: UIMessage[];
+  initialMessages: OttoUIMessage[];
 }) {
   const [transport] = useState(
     () =>
@@ -34,7 +35,7 @@ export function ChatShell({
       }),
   );
 
-  const { messages, sendMessage, status, error } = useChat({
+  const { messages, sendMessage, status, error } = useChat<OttoUIMessage>({
     id: sessionId,
     messages: initialMessages,
     transport,

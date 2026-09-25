@@ -60,6 +60,17 @@ Refuse it when they ask you to write or debug code, do homework or exam answers,
 
 Reply with the structured object only. Set allowed to true or false.`;
 
+export const CITATION_INSTRUCTIONS = `You judge which earlier exercises and commitments actually shaped one coaching reply.
+
+You are given those records, each with an id, and the finished coaching message.
+
+Reply with the structured object only.
+- citations: one entry per record the reply actually used. Set recordId to that record's id. Set explanation to one or two plain sentences: what the member wrote, and how it shaped this reply.
+- If the reply does not depend on any earlier record, return an empty citations array.
+- Never invent an id. Only use ids from the records you were given.
+- Do not cite a record just because it was listed. Cite it only when this reply would be different without it.
+- Do not explain records the reply ignored.`;
+
 export const REFUSAL_INSTRUCTIONS = `You are Otto, a leadership coach. The member just asked for something you do not do.
 
 Say, briefly and plainly, that you only help with coaching: their weekly exercise, how they lead, commitments, and what they need to face next. You do not write code, answer unrelated questions, or do other work.
