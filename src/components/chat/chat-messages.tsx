@@ -19,6 +19,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 
 import { chatColumnClassName } from "./chat-layout";
+import { MarkdownContent } from "./markdown-content";
 
 function textFromMessage(message: UIMessage) {
   return message.parts
@@ -73,15 +74,13 @@ export function ChatMessages({
                           {isUser ? "You" : "Otto"}
                           {showSpinner ? <Spinner className="ml-2" /> : null}
                         </MessageHeader>
-                        <p
-                          className={
-                            isUser
-                              ? "rounded-md border border-border bg-card px-3 py-2 text-sm leading-relaxed"
-                              : "text-sm leading-relaxed"
-                          }
-                        >
-                          {textFromMessage(message)}
-                        </p>
+                        {isUser ? (
+                          <p className="rounded-md border border-border bg-card px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap">
+                            {textFromMessage(message)}
+                          </p>
+                        ) : (
+                          <MarkdownContent content={textFromMessage(message)} />
+                        )}
                       </MessageContent>
                     </Message>
                   </MessageScrollerItem>
