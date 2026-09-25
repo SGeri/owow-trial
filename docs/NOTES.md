@@ -24,3 +24,9 @@
 12. react guidelines to follow, global errors, states, suspense
 
 13. testing!!!
+
+14. testing data set
+
+15. kpi?
+
+16. xml prompting
