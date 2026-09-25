@@ -1,8 +1,4 @@
-/**
- * Server-only AI Gateway client.
- *
- * Prefer `chatModel()` / `ai` from this barrel. Do not import in client components.
- */
+/** Server-only AI Gateway client. Prefer `chatModel()` / `ai`. */
 
 export { ai, chatModel, getChatModel } from "./client";
 export {

@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 type RecordTypeFilter = "all" | "exercise" | "commitment" | "private_chat";
 type VisibilityFilter = "all" | "exercise" | "private_chat";
 
-function FilterChip({
+function FilterButton({
   active,
   onClick,
   children,
@@ -39,7 +39,7 @@ function FilterChip({
       type="button"
       size="xs"
       variant={active ? "default" : "outline"}
-      className={cn("rounded-full", active && "shadow-sm")}
+      className={cn(!active && "bg-transparent")}
       onClick={onClick}
     >
       {children}
@@ -47,11 +47,11 @@ function FilterChip({
   );
 }
 
-function MetaBadge({ children }: { children: React.ReactNode }) {
+function MetaLabel({ children }: { children: React.ReactNode }) {
   return (
-    <Badge variant="outline" className="font-mono text-[0.65rem]">
+    <span className="font-mono text-[0.65rem] text-muted-foreground">
       {children}
-    </Badge>
+    </span>
   );
 }
 
@@ -120,7 +120,7 @@ export function SessionInfoDialog({ sessionId }: { sessionId: string }) {
             variant="outline"
             size="icon-sm"
             aria-label="Session fixture details"
-            className="bg-card shadow-sm"
+            className="bg-card"
           />
         }
       >
@@ -130,7 +130,7 @@ export function SessionInfoDialog({ sessionId }: { sessionId: string }) {
         className="flex max-h-[min(90vh,52rem)] w-full max-w-[calc(100%-1.5rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl"
         showCloseButton
       >
-        <DialogHeader className="gap-1 border-b border-border/70 px-5 py-4 pr-12">
+        <DialogHeader className="gap-1 border-b border-border px-5 py-4 pr-12">
           <DialogTitle className="font-heading text-xl tracking-tight">
             Session fixture
           </DialogTitle>
@@ -140,7 +140,7 @@ export function SessionInfoDialog({ sessionId }: { sessionId: string }) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3 border-b border-border/70 bg-muted/30 px-5 py-3">
+        <div className="flex flex-col gap-3 border-b border-border px-5 py-3">
           <div className="relative">
             <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -160,13 +160,13 @@ export function SessionInfoDialog({ sessionId }: { sessionId: string }) {
                 ["private_chat", "Private"],
               ] as const
             ).map(([value, label]) => (
-              <FilterChip
+              <FilterButton
                 key={value}
                 active={typeFilter === value}
                 onClick={() => setTypeFilter(value)}
               >
                 {label}
-              </FilterChip>
+              </FilterButton>
             ))}
             <Separator orientation="vertical" className="mx-1 h-4" />
             <span className="mr-1 text-xs text-muted-foreground">Visible</span>
@@ -177,13 +177,13 @@ export function SessionInfoDialog({ sessionId }: { sessionId: string }) {
                 ["private_chat", "Private"],
               ] as const
             ).map(([value, label]) => (
-              <FilterChip
+              <FilterButton
                 key={value}
                 active={visibilityFilter === value}
                 onClick={() => setVisibilityFilter(value)}
               >
                 {label}
-              </FilterChip>
+              </FilterButton>
             ))}
           </div>
         </div>
@@ -199,7 +199,7 @@ export function SessionInfoDialog({ sessionId }: { sessionId: string }) {
             </div>
           ) : context ? (
             <Tabs defaultValue="records" className="flex h-full min-h-0 flex-col gap-0">
-              <div className="border-b border-border/70 px-5 py-2">
+              <div className="border-b border-border px-5 py-2">
                 <TabsList variant="line" className="w-full justify-start">
                   <TabsTrigger value="records">
                     Records ({filteredRecords.length})
@@ -215,20 +215,17 @@ export function SessionInfoDialog({ sessionId }: { sessionId: string }) {
                 className="min-h-0 flex-1 overflow-hidden data-hidden:hidden"
               >
                 <ScrollArea className="h-[min(52vh,28rem)]">
-                  <div className="space-y-3 px-5 py-4">
+                  <div className="divide-y divide-border px-5">
                     {filteredRecords.length === 0 ? (
                       <p className="py-10 text-center text-sm text-muted-foreground">
                         No records match these filters.
                       </p>
                     ) : (
                       filteredRecords.map((record) => (
-                        <article
-                          key={record.id}
-                          className="rounded-xl border border-border/80 bg-card p-4 shadow-sm"
-                        >
-                          <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                            <MetaBadge>{record.id}</MetaBadge>
-                            <MetaBadge>week {record.week}</MetaBadge>
+                        <article key={record.id} className="py-4">
+                          <div className="mb-2 flex flex-wrap items-center gap-2">
+                            <MetaLabel>{record.id}</MetaLabel>
+                            <MetaLabel>week {record.week}</MetaLabel>
                             <Badge
                               variant={
                                 record.type === "private_chat"
@@ -251,10 +248,10 @@ export function SessionInfoDialog({ sessionId }: { sessionId: string }) {
                               </Badge>
                             ) : null}
                             {record.replacedBy ? (
-                              <MetaBadge>→ {record.replacedBy}</MetaBadge>
+                              <MetaLabel>replaced by {record.replacedBy}</MetaLabel>
                             ) : null}
                           </div>
-                          <p className="text-sm leading-relaxed text-foreground/90">
+                          <p className="text-sm leading-relaxed text-foreground">
                             {record.text}
                           </p>
                         </article>
@@ -269,22 +266,19 @@ export function SessionInfoDialog({ sessionId }: { sessionId: string }) {
                 className="min-h-0 flex-1 overflow-hidden data-hidden:hidden"
               >
                 <ScrollArea className="h-[min(52vh,28rem)]">
-                  <div className="space-y-3 px-5 py-4">
+                  <div className="divide-y divide-border px-5">
                     {filteredScenarios.length === 0 ? (
                       <p className="py-10 text-center text-sm text-muted-foreground">
                         No scenarios match these filters.
                       </p>
                     ) : (
                       filteredScenarios.map((scenario) => (
-                        <article
-                          key={scenario.id}
-                          className="rounded-xl border border-border/80 bg-card p-4 shadow-sm"
-                        >
-                          <div className="mb-3 flex flex-wrap items-center gap-1.5">
-                            <Badge className="font-heading text-xs">
+                        <article key={scenario.id} className="py-4">
+                          <div className="mb-3 flex flex-wrap items-center gap-2">
+                            <span className="font-heading text-sm">
                               {scenario.id}
-                            </Badge>
-                            <MetaBadge>week {scenario.week}</MetaBadge>
+                            </span>
+                            <MetaLabel>week {scenario.week}</MetaLabel>
                           </div>
                           <div className="space-y-3">
                             <div>

@@ -19,7 +19,7 @@
 
 10. general code quality framework check
 
-11. vibe code checklist
+11. vibe code checklist → use antislop + DESIGN.md (installed under `.agents/skills/antislop*`)
 
 12. react guidelines to follow, global errors, states, suspense
 

@@ -8,17 +8,11 @@ export type CreateAiGatewayOptions = Omit<
   NonNullable<Parameters<typeof createGateway>[0]>,
   "apiKey"
 > & {
-  /**
-   * Override the Gateway API key. Defaults to `env.AI_GATEWAY_API_KEY`.
-   * Prefer the env-backed default in production.
-   */
+  /** Defaults to `env.AI_GATEWAY_API_KEY`. Prefer that in production. */
   apiKey?: string;
 };
 
-/**
- * Build a Vercel AI Gateway provider with an explicit API key.
- * Prefer the shared `ai` singleton from `./client` in application code.
- */
+/** Prefer the shared `ai` singleton from `./client` in application code. */
 export function createAiGateway(
   options: CreateAiGatewayOptions = {},
 ): AiGateway {

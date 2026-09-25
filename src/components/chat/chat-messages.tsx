@@ -1,16 +1,7 @@
 "use client";
 
 import type { ChatStatus, UIMessage } from "ai";
-import { MessageSquareTextIcon } from "lucide-react";
 
-import { Bubble, BubbleContent } from "@/components/ui/bubble";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
 import {
   Message,
   MessageContent,
@@ -48,19 +39,14 @@ export function ChatMessages({
   if (messages.length === 0) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center px-4">
-        <Empty className="animate-in fade-in slide-in-from-bottom-2 border-0 duration-700">
-          <EmptyHeader>
-            <EmptyMedia variant="icon" className="bg-accent text-accent-foreground">
-              <MessageSquareTextIcon />
-            </EmptyMedia>
-            <EmptyTitle className="font-heading text-xl tracking-tight">
-              This week’s exercise
-            </EmptyTitle>
-            <EmptyDescription className="max-w-sm text-pretty">
-              Write what happened. Otto will answer with one clear next cue.
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
+        <div className="max-w-sm text-center">
+          <p className="font-heading text-xl tracking-tight text-foreground">
+            This week&apos;s exercise
+          </p>
+          <p className="mt-2 text-sm text-pretty text-muted-foreground">
+            Write what happened. Otto answers with one clear next cue.
+          </p>
+        </div>
       </div>
     );
   }
@@ -70,7 +56,7 @@ export function ChatMessages({
       <MessageScroller className="min-h-0 flex-1">
         <MessageScrollerViewport>
           <MessageScrollerContent
-            className={`${chatColumnClassName} flex h-max min-h-full flex-col gap-6 py-6`}
+            className={`${chatColumnClassName} flex h-max min-h-full flex-col gap-5 py-6`}
           >
             <MessageGroup>
               {messages.map((message, index) => {
@@ -82,19 +68,20 @@ export function ChatMessages({
                 return (
                   <MessageScrollerItem key={message.id} scrollAnchor>
                     <Message align={isUser ? "end" : "start"}>
-                      <MessageContent>
-                        <MessageHeader className="text-[0.7rem]">
+                      <MessageContent className="max-w-[min(100%,36rem)]">
+                        <MessageHeader className="text-[0.7rem] text-muted-foreground">
                           {isUser ? "You" : "Otto"}
                           {showSpinner ? <Spinner className="ml-2" /> : null}
                         </MessageHeader>
-                        <Bubble
-                          variant={isUser ? "default" : "muted"}
-                          align={isUser ? "end" : "start"}
+                        <p
+                          className={
+                            isUser
+                              ? "rounded-md border border-border bg-card px-3 py-2 text-sm leading-relaxed"
+                              : "text-sm leading-relaxed"
+                          }
                         >
-                          <BubbleContent className="leading-relaxed">
-                            {textFromMessage(message)}
-                          </BubbleContent>
-                        </Bubble>
+                          {textFromMessage(message)}
+                        </p>
                       </MessageContent>
                     </Message>
                   </MessageScrollerItem>
@@ -104,7 +91,7 @@ export function ChatMessages({
                 <MessageScrollerItem scrollAnchor>
                   <Message align="start">
                     <MessageContent>
-                      <MessageHeader className="text-[0.7rem]">
+                      <MessageHeader className="text-[0.7rem] text-muted-foreground">
                         Otto
                       </MessageHeader>
                       <Spinner />

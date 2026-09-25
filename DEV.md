@@ -60,18 +60,25 @@ Rules:
 
 ## Agents and skills
 
-Load the matching skill before writing in that area. Project skills are in `.agents/skills/`.
+Load the matching skill before writing in that area. Project skills are in `.agents/skills/`. Routing for antislop also lives in [`AGENTS.md`](AGENTS.md).
 
 | Skill | Use when |
 | --- | --- |
+| `antislop` (+ `antislop-ui`, `antislop-copywriting`, `antislop-human`, `antislop-layoutmobile`, `antislop-code`) | Any UI, chrome copy, accessibility pass, responsive layout, or comment cleanup. Read [`DESIGN.md`](DESIGN.md) first, then the core filter, then the task skill. Ask during vs after before UI work. Delivery Gate required before shipping UI. |
 | `ai-sdk` | Changing `useChat`, `streamText`, transports, or gateway calls. Read the installed docs under `node_modules/ai/docs` — do not rely on memory. |
-| `shadcn` | Adding or composing UI components, presets, or theme tokens. |
-| `frontend-design` | Layout and visual direction. Avoid generic AI aesthetics. |
-| `color-palette` | Building or adjusting a Tailwind v4 palette. |
+| `shadcn` | Adding or composing UI components, presets, or theme tokens. Stay inside `DESIGN.md` tokens; do not invent a second palette. |
+| `frontend-design` | Extra visual critique after antislop + `DESIGN.md`. Does not replace the filter. |
+| `color-palette` | Building or adjusting a Tailwind v4 palette from a brand hex. Must end up matching `DESIGN.md`. |
 | `vercel-react-best-practices` | React and Next performance and composition. |
 | Prisma skills (`prisma-client-api`, `prisma-cli`) | Queries, migrations, or schema changes. |
 
 Also read `node_modules/next/dist/docs/` before using Next.js APIs. This app’s Next version differs from older training data.
+
+### UI direction (anti-slop)
+
+- Source of direction: [`DESIGN.md`](DESIGN.md) (call sheet / prompt book; dials ENERGY 2 / RHYTHM 2 / MOTION 1).
+- Filter: antislop skills above. Technique needs a written purpose; no radial glows, noise overlays, glass chrome stacks, page-load entrance animations, or pill-filter clusters.
+- Do not ship UI that would look the same with another product name swapped in.
 
 ## What not to do
 

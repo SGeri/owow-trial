@@ -32,7 +32,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: "Otto",
-  description: "Weekly coaching exercise",
+  description: "Weekly exercise with Otto",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

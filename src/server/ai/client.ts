@@ -15,28 +15,18 @@ function createSharedGateway(): AiGateway {
   });
 }
 
-/**
- * Shared AI Gateway provider (server-only).
- * Authenticated with `env.AI_GATEWAY_API_KEY` — not the ambient process default.
- *
- * @example
- * ```ts
- * streamText({ model: ai.chat(getChatModel()), ... })
- * streamText({ model: ai(getChatModel()), ... })
- * ```
- */
+/** Shared AI Gateway provider. Uses `env.AI_GATEWAY_API_KEY`, not process defaults. */
 export const ai = globalForAi.aiGateway ?? createSharedGateway();
 
 if (env.NODE_ENV !== "production") {
   globalForAi.aiGateway = ai;
 }
 
-/** Language model id for the app chat role, honoring `AI_CHAT_MODEL` when set. */
+/** Chat role model id: override → `AI_CHAT_MODEL` → default. */
 export function getChatModel(override?: GatewayModelId): GatewayModelId {
   return resolveChatModel(override, env.AI_CHAT_MODEL);
 }
 
-/** Convenience: `ai.chat(getChatModel(override))`. */
 export function chatModel(override?: GatewayModelId) {
   return ai.chat(getChatModel(override));
 }

@@ -26,9 +26,9 @@ export function ChatInput({
   }
 
   return (
-    <div className="relative z-10 border-t border-border/70 bg-background/80 backdrop-blur-md">
+    <div className="border-t border-border bg-background">
       <form
-        className={`${chatColumnClassName} flex items-end gap-2 py-4`}
+        className={`${chatColumnClassName} flex items-end gap-2 py-3`}
         onSubmit={(event) => {
           event.preventDefault();
           submit();
@@ -39,7 +39,7 @@ export function ChatInput({
           placeholder="What happened this week?"
           disabled={disabled}
           rows={2}
-          className="min-h-[3.25rem] resize-none bg-card shadow-sm"
+          className="min-h-[3.25rem] resize-none bg-card"
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter" && !event.shiftKey) {
@@ -53,7 +53,7 @@ export function ChatInput({
           size="icon"
           disabled={!canSend}
           aria-label="Send"
-          className="size-10 shrink-0 rounded-xl"
+          className="size-11 shrink-0 bg-cue text-cue-foreground hover:bg-cue/90"
         >
           <ArrowUpIcon />
         </Button>
