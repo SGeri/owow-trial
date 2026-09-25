@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RecordType {
+  exercise
+  commitment
+  private_chat
+}
+
+enum RecordVisibility {
+  exercise
+  private_chat
+}
+
+enum CommitmentStatus {
+  active
+  completed
+  superseded
+}
+
+model Member {
+  id       String           @id
+  sessions TrustedSession[]
+  records  CoachingRecord[]
+}
+
+model TrustedSession {
+  id        String     @id
+  memberId  String
+  member    Member     @relation(fields: [memberId], references: [id])
+  scenarios Scenario[]
+
+  @@index([memberId])
+}
+
+/// Exercise, commitment, or private-chat record from the coaching fixture.
+model CoachingRecord {
+  id         String            @id
+  memberId   String
+  member     Member            @relation(fields: [memberId], references: [id])
+  type       RecordType
+  visibility RecordVisibility
+  week       Int
+  text       String
+  status     CommitmentStatus?
+  replacedBy String?
+
+  @@index([memberId])
+  @@index([memberId, visibility])
+  @@map("records")
+}
+
+model Scenario {
+  id               String         @id
+  trustedSessionId String
+  trustedSession   TrustedSession @relation(fields: [trustedSessionId], references: [id])
+  week             Int
+  question         String
+  answer           String
+
+  @@index([trustedSessionId])
+}
