@@ -13,6 +13,9 @@ import {
 export type TrustedSessionOption = {
   id: string;
   memberId: string;
+  scenarioId: string | null;
+  empty: boolean;
+  label: string;
 };
 
 export function SessionSelector({
@@ -35,18 +38,21 @@ export function SessionSelector({
       <SelectTrigger
         size="sm"
         aria-label="Trusted session"
-        className="min-w-40 bg-card font-mono text-xs"
+        className="min-w-36 bg-card font-mono text-xs"
       >
-        <SelectValue />
+        <SelectValue>
+          {(value: string | null) => value ?? "Session"}
+        </SelectValue>
       </SelectTrigger>
-      <SelectContent align="end">
+      <SelectContent
+        align="end"
+        alignItemWithTrigger={false}
+        className="min-w-(--anchor-width) w-max"
+      >
         {sessions.map((session) => (
-          <SelectItem
-            key={session.id}
-            value={session.id}
-            className="font-mono text-xs"
-          >
-            {session.id}
+          <SelectItem key={session.id} value={session.id} className="text-xs">
+            <span className="font-mono">{session.id}</span>
+            <span className="text-muted-foreground">{session.label}</span>
           </SelectItem>
         ))}
       </SelectContent>

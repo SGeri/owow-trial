@@ -3,9 +3,40 @@ import { RecordVisibility } from "@/generated/prisma/client";
 import { db } from "@/server/db";
 
 export async function listTrustedSessions() {
-  return db.trustedSession.findMany({
+  const sessions = await db.trustedSession.findMany({
     orderBy: { id: "asc" },
-    select: { id: true, memberId: true },
+    select: {
+      id: true,
+      memberId: true,
+      scenarios: { select: { id: true }, orderBy: { week: "asc" }, take: 1 },
+      member: {
+        select: {
+          _count: {
+            select: {
+              records: {
+                where: { visibility: RecordVisibility.exercise },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return sessions.map((session) => {
+    const exerciseRecordCount = session.member._count.records;
+    const scenarioId = session.scenarios[0]?.id ?? null;
+    const empty = exerciseRecordCount === 0;
+
+    return {
+      id: session.id,
+      memberId: session.memberId,
+      scenarioId,
+      empty,
+      label: empty
+        ? "empty"
+        : (scenarioId ?? session.id),
+    };
   });
 }
 
