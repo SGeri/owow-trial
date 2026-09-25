@@ -3,7 +3,7 @@ import type { CoachContext } from "@/server/controllers/sessions";
 export function formatCoachContext(context: CoachContext): string {
   const exercises =
     context.exercises.length === 0
-      ? "No exercise question on file for this session."
+      ? "No exercise question for this session."
       : context.exercises
           .map(
             (exercise) =>
@@ -11,9 +11,9 @@ export function formatCoachContext(context: CoachContext): string {
           )
           .join("\n");
 
-  const records =
+  const earlierWork =
     context.records.length === 0
-      ? "No earlier exercise-visible history."
+      ? "No earlier exercises or commitments."
       : context.records
           .map((record) => {
             const status = record.status ? ` status=${record.status}` : "";
@@ -31,6 +31,6 @@ Member: ${context.memberId}
 This week's exercise question
 ${exercises}
 
-Earlier exercise-visible records
-${records}`;
+Earlier exercises and commitments
+${earlierWork}`;
 }

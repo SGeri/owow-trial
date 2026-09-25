@@ -94,7 +94,7 @@ export async function streamChat(input: ChatRequest) {
   const context = await listCoachContext(input.sessionId);
   const contextBlock = context
     ? formatCoachContext(context)
-    : "Member context\nNo exercise-visible history.";
+    : "Member context\nNo earlier exercises or commitments.";
 
   const result = streamText({
     model: chatModel(),
