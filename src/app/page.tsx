@@ -1,4 +1,5 @@
 import { ChatShell } from "@/components/chat/chat-shell";
+import { listMessagesForSession } from "@/server/controllers/threads";
 import { listTrustedSessions } from "@/server/controllers/sessions";
 
 export default async function Home({ searchParams }: PageProps<"/">) {
@@ -21,7 +22,14 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     );
   }
 
+  const initialMessages = await listMessagesForSession(sessionId);
+
   return (
-    <ChatShell key={sessionId} sessionId={sessionId} sessions={sessions} />
+    <ChatShell
+      key={sessionId}
+      sessionId={sessionId}
+      sessions={sessions}
+      initialMessages={initialMessages}
+    />
   );
 }

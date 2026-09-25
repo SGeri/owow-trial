@@ -155,6 +155,8 @@ const fixture = {
 } as const;
 
 async function main() {
+  await prisma.chatMessage.deleteMany();
+  await prisma.chatThread.deleteMany();
   await prisma.scenario.deleteMany();
   await prisma.coachingRecord.deleteMany();
   await prisma.trustedSession.deleteMany();
@@ -192,8 +194,14 @@ async function main() {
     data: [...fixture.scenarios],
   });
 
+  await prisma.chatThread.createMany({
+    data: fixture.trustedSessions.map((session) => ({
+      trustedSessionId: session.id,
+    })),
+  });
+
   console.log(
-    `Seeded ${memberIds.length} members, ${fixture.trustedSessions.length} sessions, ${fixture.records.length} records, ${fixture.scenarios.length} scenarios.`,
+    `Seeded ${memberIds.length} members, ${fixture.trustedSessions.length} sessions, ${fixture.records.length} records, ${fixture.scenarios.length} scenarios, ${fixture.trustedSessions.length} threads.`,
   );
 }
 

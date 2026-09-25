@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { DefaultChatTransport, type UIMessage } from "ai";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -15,22 +15,28 @@ import { SessionSelector, type TrustedSessionOption } from "./session-selector";
 export function ChatShell({
   sessionId,
   sessions,
+  initialMessages,
 }: {
   sessionId: string;
   sessions: TrustedSessionOption[];
+  initialMessages: UIMessage[];
 }) {
   const [transport] = useState(
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        prepareSendMessagesRequest: ({ messages, id }) => ({
-          body: { messages, id, sessionId },
+        prepareSendMessagesRequest: ({ messages }) => ({
+          body: {
+            sessionId,
+            message: messages[messages.length - 1],
+          },
         }),
       }),
   );
 
   const { messages, sendMessage, status, error } = useChat({
     id: sessionId,
+    messages: initialMessages,
     transport,
   });
 

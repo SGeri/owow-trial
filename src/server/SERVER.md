@@ -14,11 +14,12 @@ src/server/
     models.ts            Named roles + `GatewayModelId` helpers
   controllers/           Data access functions pages and actions call.
     sessions.ts          listTrustedSessions(), getSessionContext()
+    threads.ts           getOrCreateThreadForSession, list/replace UIMessages
   schemas/               Zod schemas for untrusted input.
-    chat.ts              chatRequestSchema
+    chat.ts              chatRequestSchema ({ sessionId, message })
     sessions.ts          sessionIdSchema
   chat/                  Model calls and coaching flow.
-    stream-chat.ts       streamChat() — uses `chatModel()` from `ai/`
+    stream-chat.ts       streamChat() — load thread, stream, persist onEnd
   actions/               Server Actions for client calls.
     index.ts             Barrel
     sessions.ts          getSessionContextAction
@@ -45,13 +46,18 @@ export async function saveSomething(input: unknown) {
 
 Re-export it from `actions/index.ts`. Actions validate, then call a controller. They do not embed Prisma queries or stream tokens.
 
-**Chat.** Extend `src/server/chat/`. The route stays a parse-and-delegate handler. Models come from `@/server/ai` (`chatModel()`), authenticated with `env.AI_GATEWAY_API_KEY` via `createGateway`. The current call is:
+**Chat.** Extend `src/server/chat/`. The route stays a parse-and-delegate handler. Models come from `@/server/ai` (`chatModel()`), authenticated with `env.AI_GATEWAY_API_KEY` via `createGateway`.
 
-- model: `chatModel()` → default `openai/gpt-4o-mini` (overridable with `AI_CHAT_MODEL`)
-- system: one sentence
-- messages: `convertToModelMessages`, then `streamText` → `toUIMessageStream` + `createUIMessageStreamResponse`
+Each trusted session has one `ChatThread`. Messages are stored as AI SDK `UIMessage` rows: `role` plus `parts` JSON (and optional `metadata`). Do not persist a flattened text column.
 
-`sessionId` is accepted on the request so the client can send it. It is not used yet. When coach context lands, resolve the trusted session inside `chat/` (or a controller it calls), filter records in code, then pass the result into `streamText`. Do not put that in the route.
+The client sends only the latest message plus `sessionId`. `streamChat`:
+
+1. Resolves or creates the session thread and loads prior `UIMessage[]`.
+2. Appends the new message and runs `validateUIMessages`.
+3. Calls `streamText` with `convertToModelMessages`.
+4. Returns `toUIMessageStream` with `originalMessages`. `onEnd` replaces the thread’s messages. `consumeStream()` keeps the save running if the client disconnects.
+
+When coach context lands, resolve the trusted session inside `chat/` (or a controller it calls), filter records in code, then pass the result into `streamText`. Do not put that in the route.
 
 ## Naming
 

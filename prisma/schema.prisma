@@ -31,10 +31,11 @@ model Member {
 }
 
 model TrustedSession {
-  id        String     @id
+  id        String      @id
   memberId  String
-  member    Member     @relation(fields: [memberId], references: [id])
+  member    Member      @relation(fields: [memberId], references: [id])
   scenarios Scenario[]
+  thread    ChatThread?
 
   @@index([memberId])
 }
@@ -65,4 +66,32 @@ model Scenario {
   answer           String
 
   @@index([trustedSessionId])
+}
+
+enum ChatMessageRole {
+  user
+  assistant
+  system
+}
+
+/// One conversation per trusted session. Stores AI SDK UI messages, not plain text.
+model ChatThread {
+  id               String         @id @default(cuid())
+  trustedSessionId String         @unique
+  trustedSession   TrustedSession @relation(fields: [trustedSessionId], references: [id], onDelete: Cascade)
+  messages         ChatMessage[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model ChatMessage {
+  id        String          @id
+  threadId  String
+  thread    ChatThread      @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  role      ChatMessageRole
+  parts     Json
+  metadata  Json?
+  createdAt DateTime        @default(now())
+
+  @@index([threadId, createdAt])
 }
