@@ -1,5 +1,5 @@
 import { ChatShell } from "@/components/chat/chat-shell";
-import { db } from "@/db";
+import { listTrustedSessions } from "@/server/controllers/sessions";
 
 export default async function Home({ searchParams }: PageProps<"/">) {
   const params = await searchParams;
@@ -7,10 +7,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     ? params.session[0]
     : params.session;
 
-  const sessions = await db.trustedSession.findMany({
-    orderBy: { id: "asc" },
-    select: { id: true, memberId: true },
-  });
+  const sessions = await listTrustedSessions();
 
   const sessionId =
     sessions.find((session) => session.id === requested)?.id ??

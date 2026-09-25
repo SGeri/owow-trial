@@ -22,3 +22,5 @@
 11. vibe code checklist
 
 12. react guidelines to follow, global errors, states, suspense
+
+13. testing!!!
