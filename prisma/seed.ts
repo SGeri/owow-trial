@@ -200,8 +200,69 @@ async function main() {
     })),
   });
 
+  // session-202: canned thread so Prior work / chat UI can be reviewed without a gateway key
+  const demoThread = await prisma.chatThread.findUniqueOrThrow({
+    where: { trustedSessionId: "session-202" },
+    select: { id: true },
+  });
+
+  const revised = fixture.scenarios.find(
+    (scenario) => scenario.id === "revised-commitment",
+  )!;
+
+  await prisma.chatMessage.createMany({
+    data: [
+      {
+        id: "msg-demo-202-user",
+        threadId: demoThread.id,
+        role: "user",
+        parts: [{ type: "text", text: revised.answer }],
+        createdAt: new Date("2026-01-15T10:00:00.000Z"),
+      },
+      {
+        id: "msg-demo-202-assistant",
+        threadId: demoThread.id,
+        role: "assistant",
+        parts: [
+          {
+            type: "text",
+            text: [
+              "You paused before saying yes, and the open commitment is still to ask your manager which existing priority should move — not to decline every unplanned request.",
+              "",
+              "What would make that ranking conversation feel doable on Monday morning?",
+              "",
+              "Possible next commitment: Before noon on Monday, ask your manager to rank one new request against the current top three.",
+            ].join("\n"),
+          },
+        ],
+        metadata: {
+          citationStatus: "complete",
+          citations: [
+            {
+              recordId: "com-202-2",
+              week: 1,
+              type: "commitment",
+              text: "On Monday, I will ask my manager to rank new requests against our current priorities.",
+              explanation:
+                "The reply coaches against the active plan, not the superseded decline-everything wording.",
+            },
+            {
+              recordId: "ex-202-1",
+              week: 1,
+              type: "exercise",
+              text: "I agreed to several urgent requests without asking what should be delayed.",
+              explanation:
+                "Links this week's pause to the earlier pattern of accepting urgent requests without trade-offs.",
+            },
+          ],
+        },
+        createdAt: new Date("2026-01-15T10:00:05.000Z"),
+      },
+    ],
+  });
+
   console.log(
-    `Seeded ${memberIds.length} members, ${fixture.trustedSessions.length} sessions, ${fixture.records.length} records, ${fixture.scenarios.length} scenarios, ${fixture.trustedSessions.length} threads.`,
+    `Seeded ${memberIds.length} members, ${fixture.trustedSessions.length} sessions, ${fixture.records.length} records, ${fixture.scenarios.length} scenarios, ${fixture.trustedSessions.length} threads, demo messages on session-202.`,
   );
 }
 

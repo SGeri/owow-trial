@@ -64,6 +64,17 @@ describe("session controllers", () => {
     expect(await listCoachContext("missing")).toBeNull();
   });
 
+  it("returns empty records for the no-history session", async () => {
+    const context = await listCoachContext("session-303");
+
+    expect(context).not.toBeNull();
+    expect(context!.memberId).toBe("member-303");
+    expect(context!.records).toEqual([]);
+    expect(context!.exercises.map((exercise) => exercise.id)).toContain(
+      "no-history",
+    );
+  });
+
   it("includes private chat in the fixture viewer context", async () => {
     const context = await getSessionContext("session-101");
     expect(context?.records.map((record) => record.id)).toContain("chat-101-1");

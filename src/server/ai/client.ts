@@ -10,12 +10,12 @@ const globalForAi = globalThis as unknown as {
   aiGateway?: AiGateway;
 };
 
-/** Shared AI Gateway provider (`env.AI_GATEWAY_API_KEY`). */
+/** Shared AI Gateway provider. `apiKey` omitted when `AI_GATEWAY_API_KEY` is unset. */
 export const ai =
   globalForAi.aiGateway ??
-  createGateway({
-    apiKey: env.AI_GATEWAY_API_KEY,
-  });
+  createGateway(
+    env.AI_GATEWAY_API_KEY ? { apiKey: env.AI_GATEWAY_API_KEY } : {},
+  );
 
 if (env.NODE_ENV !== "production") {
   globalForAi.aiGateway = ai;

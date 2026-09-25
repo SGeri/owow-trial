@@ -16,7 +16,11 @@ The pipeline is linear application code:
 
 1. An input guardrail classifies the latest message. Off-topic requests get a short refusal, with no member records in that call.
 2. On topic, the server loads this member's exercise-visible history, formats it, and streams Otto.
-3. After the reply, a citation pass names which earlier exercises and commitments actually shaped it, and why. That explanation is stored on the assistant message. A reviewer view that shows it is still to build.
+3. After the reply, a citation pass names which earlier exercises and commitments actually shaped it, and why. That explanation is stored on the assistant message and shown in the chat as “Prior work”.
+
+Live coaching still goes through the AI Gateway (guardrail, coach, citations). There is no offline coach adapter that invents new replies.
+
+`AI_GATEWAY_API_KEY` is optional. Without it you can run the app, switch sessions, and open **session-202**, which is seeded with a sample member message, Otto reply, and Prior work citations so the revised-commitment idea is visible without a model call. Sending a new message needs a real key.
 
 Models are named in one enum (`AI_MODELS`: chat, guardrail, citations) and called through the AI Gateway, with `AI_MODEL_FALLBACKS` if the selected model does not answer. The coach prompt is a shortened form of the existing Otto base prompt (`docs/BASE_PROMPT.md` → `docs/SIMPLIFIED_PROMPT.md`).
 
@@ -116,9 +120,7 @@ It covers the components this screen needs, the examples are everywhere, and cod
 Not chosen:
 
 - Material UI: heavy theme, generic look
-- Ant Design: admin chrome, awkward to restyle
 - Mantine: another full kit, fewer paste-in examples
-- Chakra UI: thinner set of current examples
 - Base UI or Radix alone: primitives, every component still to assemble
 
 ### Prisma
@@ -139,7 +141,6 @@ Other Next.js plus React chat integrations, and why they lost:
 
 - OpenAI SDK and a hand-rolled SSE parser: the React hook would be mine to maintain
 - assistant-ui: a second chat UI layer on top of shadcn
-- CopilotKit: hooks built for in-app copilots and tool panels, past a single coaching thread
 - A Mastra or LangGraph chat route: streaming exists, and it expects the orchestration I skipped in decision 1
 
 ## Privacy
@@ -158,7 +159,7 @@ Not decided here:
 
 ## Evaluation and failure
 
-The brief defines no quality metric, and the app has none. Vitest covers request shape, context formatting, the privacy query, the guardrail branch, and the citation id check. Those tests mock the model. Coaching quality stays outside the suite. After launch I would want a labelled set: continuity, revised commitment, empty history, private text absent from the model input, and a rubric for observation, one question, and follow-through claimed only when a record says completed.
+The brief defines no quality metric, and the app has none. Vitest covers request shape, context formatting (including no-history), the privacy query, the guardrail branch, and the citation id check. Coaching quality stays outside the suite. After launch I would want a labelled set: continuity, revised commitment, empty history, private text absent from the model input, and a rubric for observation, one question, and follow-through claimed only when a record says completed.
 
 Failure in the prototype:
 
@@ -166,12 +167,11 @@ Failure in the prototype:
 - Guardrail refusal streams a decline and omits records.
 - If the citation pass throws, the coaching reply still persists.
 - The screen shows a spinner while streaming and an alert when the request fails.
-- Provider and model fallback stay on the gateway (`AI_MODEL_FALLBACKS`). The app has one client. If every model fails or the gateway is down, the member sees that alert.
+- Provider and model fallback stay on the gateway (`AI_MODEL_FALLBACKS`). The app has one client. If the key is missing, every model fails, or the gateway is down, a new send shows the alert; session-202 still shows its seeded thread.
 
 ## Next
 
 - Expand the privacy section once the production constraints are settled.
-- Show the citation metadata in the reviewer view, so "why this record" is visible without reading the database.
 - Add an evaluation set for coaching quality.
 - Replace the full-history prompt with the retrieval pipeline when a member's record count makes the dump a liability.
 - Add the post-generation coaching check from that pipeline. The current citation pass only explains which records were used.

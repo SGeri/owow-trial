@@ -13,7 +13,8 @@ export const env = createEnv({
       .enum(["development", "test", "production"])
       .default("development"),
     DATABASE_URL: z.url(),
-    AI_GATEWAY_API_KEY: z.string().min(1),
+    /** Optional. Without it, browse seeded sessions (incl. session-202 demo thread); live coach calls need a key. */
+    AI_GATEWAY_API_KEY: z.string().min(1).optional(),
     /** Optional Gateway model id override (e.g. `openai/gpt-4o-mini`). */
     AI_CHAT_MODEL: z
       .string()

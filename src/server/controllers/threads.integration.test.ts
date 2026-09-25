@@ -7,6 +7,7 @@ import { seedTestDatabase } from "@/test/ensure-db";
 import {
   getAssistantMessageForSession,
   getOrCreateThreadForSession,
+  listMessagesForSession,
   listThreadMessages,
   replaceThreadMessages,
   setMessageCitationsForSession,
@@ -30,6 +31,21 @@ describe("thread persistence", () => {
     expect(created?.id).not.toBe(existing?.id);
 
     expect(await getOrCreateThreadForSession("missing")).toBeNull();
+  });
+
+  it("seeds session-202 with a demo thread and prior work citations", async () => {
+    const messages = await listMessagesForSession("session-202");
+    expect(messages).toHaveLength(2);
+    expect(messages[0]?.role).toBe("user");
+    expect(messages[1]?.role).toBe("assistant");
+    expect(messages[1]?.metadata).toMatchObject({
+      citationStatus: "complete",
+      citations: expect.arrayContaining([
+        expect.objectContaining({ recordId: "com-202-2" }),
+        expect.objectContaining({ recordId: "ex-202-1" }),
+      ]),
+    });
+    expect(JSON.stringify(messages[1]?.metadata)).not.toContain("com-202-1");
   });
 
   it("lists messages by createdAt and replaces the whole thread", async () => {

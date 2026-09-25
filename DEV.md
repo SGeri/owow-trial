@@ -21,6 +21,8 @@ pnpm dev
 
 Open `http://localhost:3000`. The session selector reads trusted sessions from Postgres. Chat posts to `POST /api/chat`.
 
+`AI_GATEWAY_API_KEY` is optional. Without it, open **session-202** to review the seeded member message, Otto reply, and Prior work citations. Live sends need a key.
+
 ## Testing
 
 Unit, component, and database tests use Vitest. End-to-end tests use Playwright against a seeded Postgres database named `owow_test` (not the dev `owow` database). Postgres must be running (`docker compose up -d`).
@@ -55,7 +57,7 @@ Validated at build/runtime via [`src/env.ts`](src/env.ts) ([T3 Env](https://env.
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `DATABASE_URL` | yes | Postgres connection string |
-| `AI_GATEWAY_API_KEY` | yes | Vercel AI Gateway token (passed explicitly into the AI client) |
+| `AI_GATEWAY_API_KEY` | no | Vercel AI Gateway token. Omit to browse the UI and the seeded session-202 demo thread; required for live coach / citation calls |
 | `AI_CHAT_MODEL` | no | Override chat model Gateway id (default `openai/gpt-4o-mini`) |
 | `SKIP_ENV_VALIDATION` | no | Set to `1` to skip T3 validation (CI edge cases only) |
 
