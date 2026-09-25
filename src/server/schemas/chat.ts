@@ -17,6 +17,7 @@ export const citationSchema = z.object({
 
 export const messageMetadataSchema = z.object({
   citations: z.array(citationSchema).optional(),
+  citationStatus: z.enum(["pending", "complete"]).optional(),
 });
 
 export type Citation = z.infer<typeof citationSchema>;
@@ -37,4 +38,10 @@ export const chatRequestSchema = z.object({
   message: uiMessageSchema,
 });
 
+export const citationRequestSchema = z.object({
+  sessionId: z.string().min(1),
+  messageId: z.string().min(1),
+});
+
 export type ChatRequest = z.infer<typeof chatRequestSchema>;
+export type CitationRequest = z.infer<typeof citationRequestSchema>;

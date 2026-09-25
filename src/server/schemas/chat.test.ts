@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import { userMessage } from "@/test/fixtures/messages";
 
-import { chatRequestSchema, uiMessageSchema } from "./chat";
+import {
+  chatRequestSchema,
+  citationRequestSchema,
+  messageMetadataSchema,
+  uiMessageSchema,
+} from "./chat";
 
 describe("uiMessageSchema", () => {
   it("accepts a text message", () => {
@@ -49,6 +54,29 @@ describe("chatRequestSchema", () => {
       chatRequestSchema.safeParse({
         sessionId: "",
         message: userMessage("Hello"),
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("citation schemas", () => {
+  it("accepts pending metadata before citations are ready", () => {
+    expect(
+      messageMetadataSchema.safeParse({ citationStatus: "pending" }).success,
+    ).toBe(true);
+  });
+
+  it("requires a session and assistant message id", () => {
+    expect(
+      citationRequestSchema.safeParse({
+        sessionId: "session-101",
+        messageId: "msg-assistant",
+      }).success,
+    ).toBe(true);
+    expect(
+      citationRequestSchema.safeParse({
+        sessionId: "session-101",
+        messageId: "",
       }).success,
     ).toBe(false);
   });

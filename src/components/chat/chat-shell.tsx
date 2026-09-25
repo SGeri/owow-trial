@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import type { OttoUIMessage } from "@/server/schemas/chat";
+import {
+  messageMetadataSchema,
+  type OttoUIMessage,
+} from "@/server/schemas/chat";
 
 import { chatColumnClassName } from "./chat-layout";
 import { ChatInput } from "./chat-input";
@@ -35,11 +38,55 @@ export function ChatShell({
       }),
   );
 
-  const { messages, sendMessage, status, error } = useChat<OttoUIMessage>({
-    id: sessionId,
-    messages: initialMessages,
-    transport,
-  });
+  const { messages, sendMessage, setMessages, status, error } =
+    useChat<OttoUIMessage>({
+      id: sessionId,
+      messages: initialMessages,
+      transport,
+    });
+  const citationRequests = useRef(new Set<string>());
+
+  useEffect(() => {
+    if (status !== "ready") return;
+
+    const message = messages.at(-1);
+    if (message?.role !== "assistant") return;
+    const metadata = messageMetadataSchema.safeParse(message.metadata ?? {});
+    if (
+      !metadata.success ||
+      metadata.data.citationStatus !== "pending" ||
+      citationRequests.current.has(message.id)
+    ) {
+      return;
+    }
+
+    citationRequests.current.add(message.id);
+    void fetch("/api/chat/citations", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ sessionId, messageId: message.id }),
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Citation request failed");
+        const json: unknown = await response.json();
+        const nextMetadata = messageMetadataSchema.safeParse({
+          ...(typeof json === "object" && json ? json : {}),
+          citationStatus: "complete",
+        });
+        if (!nextMetadata.success) throw new Error("Invalid citation response");
+
+        setMessages((current) =>
+          current.map((item) =>
+            item.id === message.id
+              ? { ...item, metadata: nextMetadata.data }
+              : item,
+          ),
+        );
+      })
+      .catch(() => {
+        citationRequests.current.delete(message.id);
+      });
+  }, [messages, sessionId, setMessages, status]);
 
   const busy = status === "submitted" || status === "streaming";
 

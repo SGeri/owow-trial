@@ -1,14 +1,12 @@
 import {
   convertToModelMessages,
   createIdGenerator,
-  createUIMessageStream,
   createUIMessageStreamResponse,
   generateText,
   Output,
   streamText,
   toUIMessageStream,
   validateUIMessages,
-  type ToolSet,
   type UIMessage,
 } from "ai";
 import { z } from "zod";
@@ -22,7 +20,6 @@ import {
 } from "@/server/controllers/threads";
 import type { ChatRequest, OttoUIMessage } from "@/server/schemas/chat";
 
-import { generateCitations, type CitationSourceRecord } from "./citations";
 import { formatCoachContext } from "./context";
 import {
   COACHING_METHOD,
@@ -47,7 +44,8 @@ function textOf(message: UIMessage) {
 function persistStream(
   result: ReturnType<typeof streamText>,
   threadId: string,
-  originalMessages: UIMessage[],
+  originalMessages: OttoUIMessage[],
+  messageMetadata?: OttoUIMessage["metadata"],
 ) {
   result.consumeStream();
 
@@ -56,50 +54,14 @@ function persistStream(
       stream: result.stream,
       originalMessages,
       generateMessageId,
+      messageMetadata: messageMetadata
+        ? ({ part }) => (part.type === "start" ? messageMetadata : undefined)
+        : undefined,
       onEnd: async ({ messages: saved }) => {
         await replaceThreadMessages(threadId, saved);
       },
     }),
   });
-}
-
-function persistCoachingStream(
-  result: ReturnType<typeof streamText>,
-  threadId: string,
-  originalMessages: OttoUIMessage[],
-  records: CitationSourceRecord[],
-) {
-  result.consumeStream();
-
-  const stream = createUIMessageStream<OttoUIMessage>({
-    originalMessages,
-    generateId: generateMessageId,
-    execute: async ({ writer }) => {
-      writer.merge(
-        toUIMessageStream<ToolSet, OttoUIMessage>({
-          stream: result.stream,
-          originalMessages,
-          generateMessageId,
-        }),
-      );
-
-      try {
-        const assistantText = await result.text;
-        const citations = await generateCitations({ records, assistantText });
-        writer.write({
-          type: "message-metadata",
-          messageMetadata: { citations },
-        });
-      } catch (error) {
-        console.error("Citation pass failed", error);
-      }
-    },
-    onEnd: async ({ messages: saved }) => {
-      await replaceThreadMessages(threadId, saved);
-    },
-  });
-
-  return createUIMessageStreamResponse({ stream });
 }
 
 export async function streamChat(input: ChatRequest) {
@@ -143,10 +105,7 @@ export async function streamChat(input: ChatRequest) {
     messages: modelMessages,
   });
 
-  return persistCoachingStream(
-    result,
-    thread.id,
-    messages,
-    context?.records ?? [],
-  );
+  return persistStream(result, thread.id, messages, {
+    citationStatus: "pending",
+  });
 }
