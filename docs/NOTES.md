@@ -1,0 +1,14 @@
+1. list of stuff not handled:
+   code coverage, tests suites, tooling (linting, prettier rules, etc.)
+
+2. todo tech stack / tech decision tree + graph
+
+3. t3 + extras
+
+4. ai framework, no mastra (?), ai chat template
+
+5. db and ai framework
+
+6. prompting from base
+
+7. ai gateway with ai sdk
