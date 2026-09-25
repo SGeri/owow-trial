@@ -109,6 +109,16 @@ describe("streamChat", () => {
     expect(system).not.toContain("member-202");
 
     expect(generateText).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(generateText).mock.calls[0]?.[0].providerOptions).toEqual({
+      gateway: {
+        models: ["google/gemini-2.5-flash", "anthropic/claude-haiku-4.5"],
+      },
+    });
+    expect(vi.mocked(streamText).mock.calls[0]?.[0].providerOptions).toEqual({
+      gateway: {
+        models: ["google/gemini-2.5-flash", "anthropic/claude-haiku-4.5"],
+      },
+    });
     expect(captured.messageMetadata).toEqual({
       citationStatus: "pending",
     });

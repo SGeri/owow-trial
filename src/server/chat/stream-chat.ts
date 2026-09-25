@@ -11,7 +11,12 @@ import {
 } from "ai";
 import { z } from "zod";
 
-import { AI_MODELS, ai, chatModel } from "@/server/ai";
+import {
+  AI_MODELS,
+  ai,
+  chatModel,
+  gatewayProviderOptions,
+} from "@/server/ai";
 import { listCoachContext } from "@/server/controllers/sessions";
 import {
   getOrCreateThreadForSession,
@@ -81,6 +86,7 @@ export async function streamChat(input: ChatRequest) {
     system: GUARDRAIL_INSTRUCTIONS,
     prompt: latest ? textOf(latest) : "",
     output: Output.object({ schema: guardrailSchema }),
+    providerOptions: gatewayProviderOptions(),
   });
 
   const modelMessages = await convertToModelMessages(messages);
@@ -90,6 +96,7 @@ export async function streamChat(input: ChatRequest) {
       model: chatModel(),
       system: REFUSAL_INSTRUCTIONS,
       messages: modelMessages,
+      providerOptions: gatewayProviderOptions(),
     });
     return persistStream(result, thread.id, messages);
   }
@@ -103,6 +110,7 @@ export async function streamChat(input: ChatRequest) {
     model: chatModel(),
     system: `${OTTO_PERSONA}\n\n${COACHING_METHOD}\n\n${contextBlock}`,
     messages: modelMessages,
+    providerOptions: gatewayProviderOptions(),
   });
 
   return persistStream(result, thread.id, messages, {

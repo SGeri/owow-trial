@@ -14,7 +14,11 @@ vi.mock("@/env", () => ({
 }));
 
 import { ai, chatModel } from "./client";
-import { AI_MODELS } from "./models";
+import {
+  AI_MODELS,
+  AI_MODEL_FALLBACKS,
+  gatewayProviderOptions,
+} from "./models";
 
 describe("chat models", () => {
   beforeEach(() => {
@@ -38,5 +42,20 @@ describe("chat models", () => {
 
     chatModel("google/gemini-2.5-flash");
     expect(spy).toHaveBeenLastCalledWith("google/gemini-2.5-flash");
+  });
+
+  it("exposes gateway model fallbacks for providerOptions", () => {
+    expect(AI_MODEL_FALLBACKS).toEqual([
+      "google/gemini-2.5-flash",
+      "anthropic/claude-haiku-4.5",
+    ]);
+    expect(gatewayProviderOptions()).toEqual({
+      gateway: { models: [...AI_MODEL_FALLBACKS] },
+    });
+    expect(
+      gatewayProviderOptions(["openai/gpt-4.1-mini" as const]),
+    ).toEqual({
+      gateway: { models: ["openai/gpt-4.1-mini"] },
+    });
   });
 });

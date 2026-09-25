@@ -18,7 +18,7 @@ The pipeline is linear application code:
 2. On topic, the server loads this member's exercise-visible history, formats it, and streams Otto.
 3. After the reply, a citation pass names which earlier exercises and commitments actually shaped it, and why. That explanation is stored on the assistant message. A reviewer view that shows it is still to build.
 
-Models are named in one enum (`AI_MODELS`: chat, guardrail, citations) and called through the AI Gateway. The coach prompt is a shortened form of the existing Otto base prompt (`docs/BASE_PROMPT.md` → `docs/SIMPLIFIED_PROMPT.md`).
+Models are named in one enum (`AI_MODELS`: chat, guardrail, citations) and called through the AI Gateway, with `AI_MODEL_FALLBACKS` if the selected model does not answer. The coach prompt is a shortened form of the existing Otto base prompt (`docs/BASE_PROMPT.md` → `docs/SIMPLIFIED_PROMPT.md`).
 
 Out of this slice: authentication, saving a new commitment, a human operator, a quality score, and retrieval over a long history.
 
@@ -131,7 +131,7 @@ Drizzle would also have been a sound Postgres choice. I took Prisma for the clie
 
 Calls go through the Vercel AI SDK (`ai`, `@ai-sdk/react`), aimed at the AI Gateway. The direct OpenAI SDK was the other obvious client.
 
-The gateway is where model swaps, provider fallbacks, and pricing sit. `AI_MODELS` holds the ids. `useChat` speaks the same UI message stream the server writes, so the chat client uses that stream as-is.
+The gateway is where model swaps, provider fallbacks, and pricing sit. `AI_MODELS` holds the primary ids; `AI_MODEL_FALLBACKS` lists backups as `providerOptions.gateway.models`. `useChat` speaks the same UI message stream the server writes, so the chat client uses that stream as-is.
 
 OpenRouter in front of the same AI SDK would have been a real alternative: same `streamText` and `useChat`, different router. I stayed on the Vercel gateway so the app, the model route, and the logs are one stack when something breaks.
 
@@ -166,7 +166,7 @@ Failure in the prototype:
 - Guardrail refusal streams a decline and omits records.
 - If the citation pass throws, the coaching reply still persists.
 - The screen shows a spinner while streaming and an alert when the request fails.
-- Provider fallback stays on the gateway. The app has one client. If the gateway is down, the member sees that alert.
+- Provider and model fallback stay on the gateway (`AI_MODEL_FALLBACKS`). The app has one client. If every model fails or the gateway is down, the member sees that alert.
 
 ## Next
 

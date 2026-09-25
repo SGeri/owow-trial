@@ -1,7 +1,7 @@
 import { generateText, Output } from "ai";
 import { z } from "zod";
 
-import { AI_MODELS, ai } from "@/server/ai";
+import { AI_MODELS, ai, gatewayProviderOptions } from "@/server/ai";
 import {
   citationSchema,
   type Citation,
@@ -85,6 +85,7 @@ export async function generateCitations(input: {
     system: CITATION_INSTRUCTIONS,
     prompt: `Earlier exercises and commitments\n${formatCitationRecords(input.records)}\n\nCoaching reply\n${assistantText}`,
     output: Output.object({ schema: citationOutputSchema }),
+    providerOptions: gatewayProviderOptions(),
   });
 
   return enrichCitations(input.records, result.output.citations);
