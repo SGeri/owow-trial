@@ -12,3 +12,13 @@
 6. prompting from base
 
 7. ai gateway with ai sdk
+
+8. dev guidelines, repro steps
+
+9. zod validation
+
+10. general code quality framework check
+
+11. vibe code checklist
+
+12. react guidelines to follow, global errors, states, suspense
