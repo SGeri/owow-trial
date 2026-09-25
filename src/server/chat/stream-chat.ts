@@ -11,7 +11,7 @@ import {
 } from "ai";
 import { z } from "zod";
 
-import { ai, chatModel } from "@/server/ai";
+import { AI_MODELS, ai, chatModel } from "@/server/ai";
 import { listCoachContext } from "@/server/controllers/sessions";
 import {
   getOrCreateThreadForSession,
@@ -21,7 +21,6 @@ import {
 import type { ChatRequest } from "@/server/schemas/chat";
 
 import { formatCoachContext } from "./context";
-import { PIPELINE_MODELS } from "./constants";
 import {
   COACHING_METHOD,
   GUARDRAIL_INSTRUCTIONS,
@@ -74,7 +73,7 @@ export async function streamChat(input: ChatRequest) {
 
   const latest = messages.at(-1);
   const guardrail = await generateText({
-    model: ai.chat(PIPELINE_MODELS.guardrail),
+    model: ai.chat(AI_MODELS.guardrail),
     system: GUARDRAIL_INSTRUCTIONS,
     prompt: latest ? textOf(latest) : "",
     output: Output.object({ schema: guardrailSchema }),

@@ -15,7 +15,13 @@ export const env = createEnv({
     DATABASE_URL: z.url(),
     AI_GATEWAY_API_KEY: z.string().min(1),
     /** Optional Gateway model id override (e.g. `openai/gpt-4o-mini`). */
-    AI_CHAT_MODEL: z.string().min(1).optional(),
+    AI_CHAT_MODEL: z
+      .string()
+      .min(1)
+      .refine((value) => value.includes("/"), {
+        message: 'Expected a Gateway id like "openai/gpt-4o-mini"',
+      })
+      .optional(),
   },
   client: {},
   runtimeEnv: {

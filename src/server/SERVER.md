@@ -7,11 +7,10 @@ Code under `src/server` is the backend. UI routes stay thin.
 ```
 src/server/
   db.ts                  Prisma client (Postgres adapter). Server-only.
-  ai/                    Vercel AI Gateway client (typed models, explicit API key).
-    index.ts             Public barrel: `ai`, `chatModel`, `AI_MODELS`, …
-    client.ts            Shared Gateway singleton
-    gateway.ts           `createAiGateway({ apiKey })`
-    models.ts            Named roles + `GatewayModelId` helpers
+  ai/                    Vercel AI Gateway client (named models, explicit API key).
+    index.ts             Public barrel: `ai`, `chatModel`, `AI_MODELS`
+    client.ts            Shared Gateway singleton + `chatModel()`
+    models.ts            `AI_MODELS` (chat, guardrail)
   controllers/           Data access functions pages and actions call.
     sessions.ts          listTrustedSessions(), getSessionContext(), listCoachContext()
     threads.ts           getOrCreateThreadForSession, list/replace UIMessages
@@ -20,7 +19,6 @@ src/server/
     sessions.ts          sessionIdSchema
   chat/                  Model calls and coaching flow.
     prompts.ts           Otto persona, coaching method, guardrail, refusal
-    constants.ts         Pipeline model roles
     context.ts           formatCoachContext
     stream-chat.ts       Guardrail, then coach or refusal stream; persist onEnd
   actions/               Server Actions for client calls.
@@ -49,7 +47,7 @@ export async function saveSomething(input: unknown) {
 
 Re-export it from `actions/index.ts`. Actions validate, then call a controller. They do not embed Prisma queries or stream tokens.
 
-**Chat.** Extend `src/server/chat/`. The route stays a parse-and-delegate handler. Models come from `@/server/ai` (`chatModel()`), authenticated with `env.AI_GATEWAY_API_KEY` via `createGateway`.
+**Chat.** Extend `src/server/chat/`. The route stays a parse-and-delegate handler. Models come from `@/server/ai` (`chatModel()`, `AI_MODELS`), authenticated with `env.AI_GATEWAY_API_KEY` via `createGateway`.
 
 Each trusted session has one `ChatThread`. Messages are stored as AI SDK `UIMessage` rows: `role` plus `parts` JSON (and optional `metadata`). Do not persist a flattened text column.
 
@@ -57,7 +55,7 @@ The client sends only the latest message plus `sessionId`. `streamChat`:
 
 1. Resolves or creates the session thread and loads prior `UIMessage[]`.
 2. Appends the new message and runs `validateUIMessages`.
-3. Classifies the latest user text with `generateText` + `Output.object` (`PIPELINE_MODELS.guardrail`). Prompts live in `src/server/chat/prompts.ts`.
+3. Classifies the latest user text with `generateText` + `Output.object` (`AI_MODELS.guardrail`). Prompts live in `src/server/chat/prompts.ts`.
 4. If blocked, streams a refusal (`REFUSAL_INSTRUCTIONS`) with no member records.
 5. If allowed, streams Otto (`OTTO_PERSONA` + `COACHING_METHOD` + `formatCoachContext`). Context comes from `listCoachContext`: exercise-visible records for that member, plus scenario questions. Private chat and other members are dropped in the query, not by the prompt.
 6. Both branches use the same `toUIMessageStream` `onEnd` save. `consumeStream()` keeps the save running if the client disconnects.

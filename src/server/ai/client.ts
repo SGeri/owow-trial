@@ -1,32 +1,31 @@
-import type { GatewayModelId } from "ai";
+import { createGateway, type GatewayModelId } from "ai";
 
 import { env } from "@/env";
 
-import { createAiGateway, type AiGateway } from "./gateway";
-import { resolveChatModel } from "./models";
+import { AI_MODELS } from "./models";
+
+export type AiGateway = ReturnType<typeof createGateway>;
 
 const globalForAi = globalThis as unknown as {
   aiGateway?: AiGateway;
 };
 
-function createSharedGateway(): AiGateway {
-  return createAiGateway({
+/** Shared AI Gateway provider (`env.AI_GATEWAY_API_KEY`). */
+export const ai =
+  globalForAi.aiGateway ??
+  createGateway({
     apiKey: env.AI_GATEWAY_API_KEY,
   });
-}
-
-/** Shared AI Gateway provider. Uses `env.AI_GATEWAY_API_KEY`, not process defaults. */
-export const ai = globalForAi.aiGateway ?? createSharedGateway();
 
 if (env.NODE_ENV !== "production") {
   globalForAi.aiGateway = ai;
 }
 
-/** Chat role model id: override → `AI_CHAT_MODEL` → default. */
-export function getChatModel(override?: GatewayModelId): GatewayModelId {
-  return resolveChatModel(override, env.AI_CHAT_MODEL);
-}
-
+/** Chat model: optional override → `AI_CHAT_MODEL` → `AI_MODELS.chat`. */
 export function chatModel(override?: GatewayModelId) {
-  return ai.chat(getChatModel(override));
+  const id =
+    override ??
+    (env.AI_CHAT_MODEL as GatewayModelId | undefined) ??
+    AI_MODELS.chat;
+  return ai.chat(id);
 }
