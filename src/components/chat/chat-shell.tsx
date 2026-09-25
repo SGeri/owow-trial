@@ -52,7 +52,9 @@ export function ChatShell({
             <p className="font-heading text-2xl leading-none tracking-tight text-foreground">
               Otto
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">Weekly exercise</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Weekly exercise
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <SessionSelector sessions={sessions} sessionId={sessionId} />
@@ -74,9 +76,7 @@ export function ChatShell({
         <ChatMessages messages={messages} status={status} />
         <ChatInput
           disabled={busy}
-          onSend={(text) => {
-            void sendMessage({ text });
-          }}
+          onSend={(text) => void sendMessage({ text })}
         />
       </div>
     </div>

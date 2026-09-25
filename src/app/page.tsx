@@ -11,8 +11,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const sessions = await listTrustedSessions();
 
   const sessionId =
-    sessions.find((session) => session.id === requested)?.id ??
-    sessions[0]?.id;
+    sessions.find((session) => session.id === requested)?.id ?? sessions[0]?.id;
 
   if (!sessionId) {
     return (

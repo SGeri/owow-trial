@@ -34,3 +34,5 @@
 17. animations
 
 18. simple admin
+
+19. i18n
