@@ -16,9 +16,11 @@
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+/.playwright-libs/
 
 # next.js
 /.next/
+/.next-e2e/
 /out/
 
 # production

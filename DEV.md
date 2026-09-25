@@ -32,17 +32,19 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
+If `libnspr4`, `libnss3`, or `libasound2` are not installed, `pnpm test:e2e` downloads those packages with `apt-get download` (no sudo) into `.playwright-libs` and launches Chromium with that library path.
+
 | Script | What it runs |
 | --- | --- |
 | `pnpm test` | Vitest: Zod and helpers, chat components, Postgres integration, mocked `streamChat` |
 | `pnpm test:watch` | Vitest in watch mode |
 | `pnpm test:coverage` | Vitest with v8 coverage. Line coverage is gated at 70% for schemas, `listCoachContext` / session controllers, `formatCoachContext`, and `streamChat` |
-| `pnpm test:e2e` | Playwright. Starts `next dev` on port 3100 with `DATABASE_URL` pointed at `owow_test` and mocks `POST /api/chat` |
+| `pnpm test:e2e` | Playwright. Builds and starts Next on port 3100 (`.next-e2e`, so it can run beside `pnpm dev`) with `DATABASE_URL` pointed at `owow_test`, and mocks `POST /api/chat` |
 | `pnpm test:e2e:ui` | Playwright UI mode |
 
 The test runner forces `DATABASE_URL` to `postgresql://owow:owow@localhost:5432/owow_test`. Override with `TEST_DATABASE_URL`. Admin connection used to create that database defaults to the dev `owow` database; override with `TEST_ADMIN_DATABASE_URL`.
 
-`AI_GATEWAY_API_KEY` is set to a dummy value when missing. Automated tests mock the AI SDK (`generateText` / `streamText`). They do not call the gateway. `SKIP_ENV_VALIDATION=1` is set for the Playwright dev server only.
+`AI_GATEWAY_API_KEY` is set to a dummy value when missing. Automated tests mock the AI SDK (`generateText` / `streamText`). They do not call the gateway. `SKIP_ENV_VALIDATION=1` is set for the Playwright server only.
 
 Live coaching-quality evals are not part of this suite.
 
