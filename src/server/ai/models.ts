@@ -1,9 +1,8 @@
 import type { GatewayModelId } from "ai";
 
-/** Named roles → AI Gateway ids (`provider/model`). */
 export const AI_MODELS = {
   chat: "openai/gpt-4o-mini",
-  chatFast: "openai/gpt-4o-mini-fast",
+  guardrail: "openai/gpt-4o-mini-fast",
 } as const satisfies Record<string, GatewayModelId>;
 
 export type AiModelRole = keyof typeof AI_MODELS;

@@ -1,3 +1,5 @@
+import { RecordVisibility } from "@/generated/prisma/client";
+
 import { db } from "@/server/db";
 
 export async function listTrustedSessions() {
@@ -72,4 +74,66 @@ export async function getSessionContext(
   ]);
 
   return { session, records, scenarios };
+}
+
+export type CoachContext = {
+  sessionId: string;
+  memberId: string;
+  records: Array<{
+    id: string;
+    type: string;
+    week: number;
+    text: string;
+    status: string | null;
+    replacedBy: string | null;
+  }>;
+  exercises: Array<{
+    id: string;
+    week: number;
+    question: string;
+  }>;
+};
+
+/** Exercise-visible records and scenario questions for the coach prompt. No private chat. */
+export async function listCoachContext(
+  sessionId: string,
+): Promise<CoachContext | null> {
+  const session = await db.trustedSession.findUnique({
+    where: { id: sessionId },
+    select: { id: true, memberId: true },
+  });
+
+  if (!session) {
+    return null;
+  }
+
+  const [records, scenarios] = await Promise.all([
+    db.coachingRecord.findMany({
+      where: {
+        memberId: session.memberId,
+        visibility: RecordVisibility.exercise,
+      },
+      orderBy: [{ week: "asc" }, { type: "asc" }, { id: "asc" }],
+      select: {
+        id: true,
+        type: true,
+        week: true,
+        text: true,
+        status: true,
+        replacedBy: true,
+      },
+    }),
+    db.scenario.findMany({
+      where: { trustedSessionId: session.id },
+      orderBy: [{ week: "asc" }, { id: "asc" }],
+      select: { id: true, week: true, question: true },
+    }),
+  ]);
+
+  return {
+    sessionId: session.id,
+    memberId: session.memberId,
+    records,
+    exercises: scenarios,
+  };
 }

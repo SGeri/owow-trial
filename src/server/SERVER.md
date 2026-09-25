@@ -13,13 +13,16 @@ src/server/
     gateway.ts           `createAiGateway({ apiKey })`
     models.ts            Named roles + `GatewayModelId` helpers
   controllers/           Data access functions pages and actions call.
-    sessions.ts          listTrustedSessions(), getSessionContext()
+    sessions.ts          listTrustedSessions(), getSessionContext(), listCoachContext()
     threads.ts           getOrCreateThreadForSession, list/replace UIMessages
   schemas/               Zod schemas for untrusted input.
     chat.ts              chatRequestSchema ({ sessionId, message })
     sessions.ts          sessionIdSchema
   chat/                  Model calls and coaching flow.
-    stream-chat.ts       streamChat() — load thread, stream, persist onEnd
+    prompts.ts           Otto persona, coaching method, guardrail, refusal
+    constants.ts         Pipeline model roles
+    context.ts           formatCoachContext
+    stream-chat.ts       Guardrail, then coach or refusal stream; persist onEnd
   actions/               Server Actions for client calls.
     index.ts             Barrel
     sessions.ts          getSessionContextAction
@@ -54,10 +57,12 @@ The client sends only the latest message plus `sessionId`. `streamChat`:
 
 1. Resolves or creates the session thread and loads prior `UIMessage[]`.
 2. Appends the new message and runs `validateUIMessages`.
-3. Calls `streamText` with `convertToModelMessages`.
-4. Returns `toUIMessageStream` with `originalMessages`. `onEnd` replaces the thread’s messages. `consumeStream()` keeps the save running if the client disconnects.
+3. Classifies the latest user text with `generateText` + `Output.object` (`PIPELINE_MODELS.guardrail`). Prompts live in `src/server/chat/prompts.ts`.
+4. If blocked, streams a refusal (`REFUSAL_INSTRUCTIONS`) with no member records.
+5. If allowed, streams Otto (`OTTO_PERSONA` + `COACHING_METHOD` + `formatCoachContext`). Context comes from `listCoachContext`: exercise-visible records for that member, plus scenario questions. Private chat and other members are dropped in the query, not by the prompt.
+6. Both branches use the same `toUIMessageStream` `onEnd` save. `consumeStream()` keeps the save running if the client disconnects.
 
-When coach context lands, resolve the trusted session inside `chat/` (or a controller it calls), filter records in code, then pass the result into `streamText`. Do not put that in the route.
+Do not put prompt text or record queries in the route.
 
 ## Naming
 
@@ -68,4 +73,4 @@ When coach context lands, resolve the trusted session inside `chat/` (or a contr
 
 ## Next, not now
 
-Otto’s persona, privacy filtering, exercise persistence, and scenario loading belong in `chat/` and new controllers. They are intentionally absent from this scaffold.
+Output guardrails, exercise writes, and human review are not in this pipeline.
