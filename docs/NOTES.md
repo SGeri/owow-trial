@@ -32,3 +32,5 @@
 16. xml prompting
 
 17. animations
+
+18. simple admin

@@ -1,5 +1,12 @@
-import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import {
+  convertToModelMessages,
+  createUIMessageStreamResponse,
+  streamText,
+  toUIMessageStream,
+  type UIMessage,
+} from "ai";
 
+import { chatModel } from "@/server/ai";
 import type { ChatRequest } from "@/server/schemas/chat";
 
 const SYSTEM_PROMPT =
@@ -7,10 +14,12 @@ const SYSTEM_PROMPT =
 
 export async function streamChat(input: ChatRequest) {
   const result = streamText({
-    model: "openai/gpt-4o-mini",
+    model: chatModel(),
     system: SYSTEM_PROMPT,
     messages: await convertToModelMessages(input.messages as UIMessage[]),
   });
 
-  return result.toUIMessageStreamResponse();
+  return createUIMessageStreamResponse({
+    stream: toUIMessageStream({ stream: result.stream }),
+  });
 }

@@ -23,12 +23,18 @@ Open `http://localhost:3000`. The session selector reads trusted sessions from P
 
 ## Environment
 
+Validated at build/runtime via [`src/env.ts`](src/env.ts) ([T3 Env](https://env.t3.gg/docs/nextjs)). Copy [`.env.example`](.env.example) to `.env`.
+
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `DATABASE_URL` | yes | Postgres connection string |
-| `AI_GATEWAY_API_KEY` | yes for chat | Vercel AI Gateway key. The SDK reads it automatically. |
+| `AI_GATEWAY_API_KEY` | yes | Vercel AI Gateway token (passed explicitly into the AI client) |
+| `AI_CHAT_MODEL` | no | Override chat model Gateway id (default `openai/gpt-4o-mini`) |
+| `SKIP_ENV_VALIDATION` | no | Set to `1` to skip T3 validation (CI edge cases only) |
 
 Do not commit `.env` or put secrets in prompts, fixtures, or docs.
+
+AI usage: import from `@/server/ai` (`chatModel()`, `ai`, `AI_MODELS`). Do not hardcode model strings in route handlers.
 
 ## Layering
 
@@ -50,7 +56,7 @@ Rules:
 
 ## Chat today
 
-`streamChat` sends one system sentence and the UI messages to `openai/gpt-4o-mini` via the AI Gateway. It does not load coaching records, apply Otto’s persona, or persist messages. That logic extends `src/server/chat` without growing the route file.
+`streamChat` uses `chatModel()` from `@/server/ai` (AI Gateway + explicit `AI_GATEWAY_API_KEY`) with one system sentence. It does not load coaching records, apply Otto’s persona, or persist messages. That logic extends `src/server/chat` without growing the route file.
 
 ## Agents and skills
 
