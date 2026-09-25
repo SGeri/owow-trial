@@ -1,5 +1,5 @@
 /**
- * Client mutations live in this folder as server actions.
+ * Client-callable server actions.
  *
  * Each action module starts with `"use server"` and exports async functions
  * only. Validate the input with a schema from `../schemas`, then call a
@@ -8,4 +8,4 @@
  * Streaming chat is not an action. It stays on `POST /api/chat`.
  */
 
-export {};
+export { getSessionContextAction } from "./sessions";

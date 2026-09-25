@@ -9,6 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { chatColumnClassName } from "./chat-layout";
 import { ChatInput } from "./chat-input";
 import { ChatMessages } from "./chat-messages";
+import { SessionInfoDialog } from "./session-info-dialog";
 import { SessionSelector, type TrustedSessionOption } from "./session-selector";
 
 export function ChatShell({
@@ -58,8 +59,9 @@ export function ChatShell({
               Weekly exercise
             </p>
           </div>
-          <div className="animate-in fade-in slide-in-from-bottom-1 duration-500 [animation-delay:80ms]">
+          <div className="flex animate-in items-center gap-2 fade-in slide-in-from-bottom-1 duration-500 [animation-delay:80ms]">
             <SessionSelector sessions={sessions} sessionId={sessionId} />
+            <SessionInfoDialog sessionId={sessionId} />
           </div>
         </div>
       </header>
