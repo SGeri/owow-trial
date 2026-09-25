@@ -32,12 +32,16 @@ export function SessionSelector({
         router.replace(`/?session=${encodeURIComponent(value)}`);
       }}
     >
-      <SelectTrigger size="sm" aria-label="Trusted session">
+      <SelectTrigger
+        size="sm"
+        aria-label="Trusted session"
+        className="min-w-40 bg-card font-mono text-xs shadow-sm"
+      >
         <SelectValue />
       </SelectTrigger>
       <SelectContent align="end">
         {sessions.map((session) => (
-          <SelectItem key={session.id} value={session.id}>
+          <SelectItem key={session.id} value={session.id} className="font-mono text-xs">
             {session.id}
           </SelectItem>
         ))}
