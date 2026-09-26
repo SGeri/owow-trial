@@ -15,12 +15,12 @@ export const env = createEnv({
     DATABASE_URL: z.url(),
     /** Optional. Without it, browse seeded sessions (incl. session-202 demo thread); live coach calls need a key. */
     AI_GATEWAY_API_KEY: z.string().min(1).optional(),
-    /** Optional Gateway model id override (e.g. `openai/gpt-4o-mini`). */
+    /** Optional Gateway model id override (e.g. `openai/gpt-5.6-luna`). */
     AI_CHAT_MODEL: z
       .string()
       .min(1)
       .refine((value) => value.includes("/"), {
-        message: 'Expected a Gateway id like "openai/gpt-4o-mini"',
+        message: 'Expected a Gateway id like "openai/gpt-5.6-luna"',
       })
       .optional(),
   },

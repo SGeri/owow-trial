@@ -71,7 +71,7 @@ The prototype stops before that. `listCoachContext` loads every exercise-visible
 
 ## Decisions
 
-### 1. Chat and coach behaviour, as a straight pipeline
+### 1. Chat and coach behaviour, as a pipeline
 
 
 |               |                                                                                                                                                                          |
@@ -87,7 +87,7 @@ The prototype stops before that. `listCoachContext` loads every exercise-visible
 
 The brief allows TypeScript or Python. I kept the AI service in the same language as the UI.
 
-Around Next.js: Zod on the request, React Hook Form where a form needs it, shadcn for the screen, Vitest for tests, Prisma for Postgres.
+Around Next.js: Zod on the request, React Hook Form where a form needs it, shadcn for the ui, Vitest for tests, Prisma for Postgres.
 
 
 |               |                                                                                                                          |

@@ -58,7 +58,7 @@ Validated at build/runtime via [`src/env.ts`](src/env.ts) ([T3 Env](https://env.
 | --- | --- | --- |
 | `DATABASE_URL` | yes | Postgres connection string |
 | `AI_GATEWAY_API_KEY` | no | Vercel AI Gateway token. Omit to browse the UI and the seeded session-202 demo thread; required for live coach / citation calls |
-| `AI_CHAT_MODEL` | no | Override chat model Gateway id (default `openai/gpt-4o-mini`) |
+| `AI_CHAT_MODEL` | no | Override chat model Gateway id (default `openai/gpt-5.6-luna`) |
 | `SKIP_ENV_VALIDATION` | no | Set to `1` to skip T3 validation (CI edge cases only) |
 
 Do not commit `.env` or put secrets in prompts, fixtures, or docs.

@@ -1,9 +1,9 @@
 import type { GatewayModelId } from "ai";
 
 export const AI_MODELS = {
-  chat: "openai/gpt-4o-mini",
-  guardrail: "openai/gpt-4o-mini-fast",
-  citations: "openai/gpt-4o-mini-fast",
+  chat: "openai/gpt-5.6-luna",
+  guardrail: "openai/gpt-5.6-luna-fast",
+  citations: "openai/gpt-5.6-luna-fast",
 } as const satisfies Record<string, GatewayModelId>;
 
 export const AI_MODEL_FALLBACKS = [

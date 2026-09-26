@@ -26,8 +26,8 @@ describe("chat models", () => {
   });
 
   it("keeps a stable guardrail model id", () => {
-    expect(AI_MODELS.guardrail).toBe("openai/gpt-4o-mini-fast");
-    expect(AI_MODELS.chat).toBe("openai/gpt-4o-mini");
+    expect(AI_MODELS.guardrail).toBe("openai/gpt-5.6-luna-fast");
+    expect(AI_MODELS.chat).toBe("openai/gpt-5.6-luna");
   });
 
   it("uses the default chat model, then AI_CHAT_MODEL, then an explicit override", () => {
